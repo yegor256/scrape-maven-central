@@ -33,7 +33,7 @@ def get(path)
   res.body
 end
 
-def scrape(path)
+def scrape(path, ignore = [])
   body = get(path)
   if (body.include?('maven-metadata.xml'))
     match = body.match(%r{maven-metadata.xml</a>\s+(\d{4}-\d{2}-\d{2} )})
@@ -43,10 +43,14 @@ def scrape(path)
     puts "#{path} #{version} #{date}"
   else
     body.scan(%r{href="([a-zA-Z\-]+/)"}).each do |p|
+      if ignore.include?(p[0])
+        puts "EXCLUDE #{p[0]}"
+        next
+      end
       scrape("#{path}#{p[0]}")
     end
   end
 end
 
-scrape(ARGV[0])
+scrape(ARGV[0], ARGV[1].nil? ? [] : ARGV[1].split(','))
 
