@@ -48,5 +48,5 @@ def scrape(path)
   end
 end
 
-scrape(ARGV[1])
+scrape(ARGV[0])
 
