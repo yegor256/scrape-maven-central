@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # Copyright (c) 2017 Yegor Bugayenko
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,6 +24,7 @@ STDOUT.sync = true
 require 'net/http'
 require 'date'
 require 'nokogiri'
+require 'slop'
 
 def get(path)
   uri = URI.parse("http://repo1.maven.org/maven2/#{path}")
@@ -33,7 +35,7 @@ def get(path)
   res.body
 end
 
-def scrape(path, ignore = [])
+def scrape(path, ignore = [], start = '')
   body = get(path)
   if (body.include?('maven-metadata.xml'))
     match = body.match(%r{maven-metadata.xml</a>\s+(\d{4}-\d{2}-\d{2} )})
@@ -42,15 +44,39 @@ def scrape(path, ignore = [])
     version = meta.xpath('//versions/version[last()]/text()')
     puts "#{path} #{version} #{date}"
   else
+    found = false
     body.scan(%r{href="([a-zA-Z\-]+/)"}).each do |p|
-      if ignore.include?(p[0])
-        puts "EXCLUDE #{p[0]}"
+      target = "#{path}#{p[0]}"
+      found = true if target.start_with?(start)
+      unless found
+        puts "SKIP #{target}, STILL LOOKING FOR #{start}"
         next
       end
-      scrape("#{path}#{p[0]}")
+      unless ignore.select{ |i| target.start_with?(i) }.empty?
+        puts "EXCLUDE #{target}"
+        next
+      end
+      scrape(target, ignore)
     end
   end
 end
 
-scrape(ARGV[0], ARGV[1].nil? ? [] : ARGV[1].split(','))
+begin
+  opts = Slop.parse(ARGV, strict: true, help: true) do |o|
+    o.banner = "Usage: ruby scrabe.rb [options]"
+    o.bool '-h', '--help', 'Show these instructions'
+    o.string '-r', '--root', 'Root path to start from', default: ''
+    o.array '-i', '--ignore', 'Prefixes to ignore, like "org/", for example'
+    o.string '-s', '--start', 'Start from this path', default: ''
+  end
+rescue Slop::Error => ex
+  raise StandardError, "#{ex.message}, try --help"
+end
+
+if opts.help?
+  puts opts
+  exit
+end
+
+scrape(opts[:root], opts[:ignore], opts[:start])
 
