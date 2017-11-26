@@ -5,21 +5,25 @@ of artifacts, their versions and dates.
 Run it like this, to scape all artifacts starting from `org/`:
 
 ```
-ruby scrape.rb org/
+ruby scrape.rb --root=org/
 ```
 
 If you want to scrape the entire index:
 
 ```
-ruby scrape.rb ''
+ruby scrape.rb
 ```
 
-To exclude something from the list:
+To exclude something from the list
+(this will exclude `org/*` and `net/*` artifacts):
 
 ```
-ruby scrape.rb '' org/,net/
+ruby scrape.rb --ignore=org/ --ignore=net/
 ```
 
-This will exclude `org/*` and `net/*` artifacts.
+To skip everything until certain path (works only for the first level):
 
+```
+ruby scrape.rb --start=org/takes/
+```
 
