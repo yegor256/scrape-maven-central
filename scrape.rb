@@ -48,14 +48,8 @@ def scrape(path, ignore = [], start = '')
     body.scan(%r{href="([a-zA-Z\-]+/)"}).each do |p|
       target = "#{path}#{p[0]}"
       found = true if target.start_with?(start)
-      unless found
-        puts "SKIP #{target}, STILL LOOKING FOR #{start}"
-        next
-      end
-      unless ignore.select{ |i| target.start_with?(i) }.empty?
-        puts "EXCLUDE #{target}"
-        next
-      end
+      next unless found
+      next unless ignore.select{ |i| target.start_with?(i) }.empty?
       scrape(target, ignore)
     end
   end

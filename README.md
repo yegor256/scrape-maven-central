@@ -2,6 +2,12 @@ Scrapes the entire [Maven Central](http://repo1.maven.org/maven2/)
 to build a full list
 of artifacts, their versions and dates.
 
+First, clone the repository and run:
+
+```
+bundle install
+```
+
 Run it like this, to scape all artifacts starting from `org/`:
 
 ```
