@@ -27,11 +27,12 @@ require 'nokogiri'
 require 'slop'
 
 def get(path)
-  uri = URI.parse("http://repo1.maven.org/maven2/#{path}")
+  uri = URI.parse("https://repo1.maven.org/maven2/#{path}")
   req = Net::HTTP::Get.new(uri.to_s)
-  res = Net::HTTP.start(uri.host, uri.port) do |http|
+  res = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
     http.request(req)
   end
+  raise "Invalid response code from #{uri}: #{res.code}" unless res.code == '200'
   res.body
 end
 
